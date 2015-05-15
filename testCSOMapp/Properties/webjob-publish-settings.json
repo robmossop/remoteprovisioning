@@ -1,0 +1,9 @@
+﻿{
+  "$schema": "http://schemastore.org/schemas/json/webjob-publish-settings.json",
+  "webJobName": "MT-SpSiteProvisioning",
+  "startTime": "2015-04-24T00:00:00+00:00",
+  "endTime": null,
+  "jobRecurrenceFrequency": "Minute",
+  "interval": 15,
+  "runMode": "Scheduled"
+}
