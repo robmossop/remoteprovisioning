@@ -33,9 +33,9 @@ namespace minttulip.spo.remoteprovisioning
             string erroredRequestsListView = configLists.GetValues("siterequestlisterroreditemsview")[0];
             Console.Out.WriteLine("Running as version 1.1");            
             //new requests
-            //processNewSiteRequests(siteUri, siteRequestListName, siteRequestListView);            
+            processNewSiteRequests(siteUri, siteRequestListName, siteRequestListView);            
             //deal with errored requests
-            processNewSiteRequests(siteUri, siteRequestListName, erroredRequestsListView);                                    
+            //processNewSiteRequests(siteUri, siteRequestListName, erroredRequestsListView);                                    
             Console.Out.WriteLine("done");            
         }
 
@@ -149,18 +149,17 @@ namespace minttulip.spo.remoteprovisioning
                         Console.Out.WriteLine("Creating new site... {0}, {1}, {2}, {3}", sr.Title, sr.Description, sr.SiteTemplate, sr.SiteAdmins[0].LookupValue);
                         //first set site creation as "in progress"
                         UpdateListItem(clientContext, sr.SpItemId, siteRequestListName, "Site_x0020_status", "Being created");
-                        //sr.Url = CreateSiteCollection(clientContext, clientContext.Url, sr.Url, sr.SiteTemplate, sr.Title, sr.Description, sr.SiteAdmins, sr.SiteOwners, sr.SiteMembers, sr.SiteVisitors);
-                        sr.SiteQuota = 5000;
-                        sr.Url = "https://capita.sharepoint.com/sites/" + sr.Url;
-                        if (sr.Url != "###ERROR###")
+                        //SiteProvisioningSiteRequest srComplete = sr;                        
+                        SiteProvisioningSiteRequest srComplete = CreateSiteCollection(clientContext, clientContext.Url, sr);
+                        if (srComplete.Url != "###ERROR###")
                         {
-                            Console.Out.WriteLine("New site created at: " + sr.Url);
+                            Console.Out.WriteLine("New site created at: " + srComplete.Url);
                             //now add users to the right groups
-                            AddAdditionalSiteAdmins(sr);
-                            AddUsersToSiteGroups(sr);
-                            UpdateListItem(clientContext, sr.SpItemId, siteRequestListName, "Site_x0020_status", "Available");                            
+                            AddAdditionalSiteAdmins(srComplete);
+                            AddUsersToSiteGroups(srComplete);
+                            UpdateListItem(clientContext, srComplete.SpItemId, siteRequestListName, "Site_x0020_status", "Available");                            
                             //send email notifying Owners of site readiness
-                            SendReadyEmail(clientContext, sr);
+                            SendReadyEmail(clientContext, srComplete);
                         }
                     }
                 }
@@ -257,7 +256,7 @@ namespace minttulip.spo.remoteprovisioning
             StringBuilder messageBody = new StringBuilder();
             messageBody.Append("<p style=\"font-family: Segoe UI;\">Dear Site Owner,<p>");
             messageBody.Append("<p style=\"font-family: Segoe UI;\">Thank you for using the Capita self-service site creation facility, your site is now ready for use and can be accessed through the following URL:<br/><br/>");
-            messageBody.AppendFormat("{0}</p>", sr.Url);
+            messageBody.AppendFormat("<a href=\"{0}\">{0}</a></p>", sr.Url);
             messageBody.AppendFormat("<p style=\"font-family: Segoe UI;\">Your site is configured in the following way:</p><ul style=\"font-family: Segoe UI;\"><li>Site title: {0}</li><li>Site template: {1}</li><li>Site quota: {2}</li></ul>", sr.Title, sr.SiteTemplate, sr.SiteQuota / 1000 + "GB");
             messageBody.Append("<p style=\"font-family: Segoe UI;\">If you require additional information about this service and what you can expect from your new site, please visit the <a href=\"https://capita.sharepoint.com/sites/help\">Digital Village</a>.<br/><br/>");
             messageBody.Append("*Please do not reply to this email, it is sent from an unmonitored account*</p>");
@@ -339,7 +338,7 @@ namespace minttulip.spo.remoteprovisioning
         /// <param name="title"></param>
         /// <param name="adminAccount"></param>
         /// <returns></returns>
-        private static string CreateSiteCollection(ClientContext ctx, string hostWebUrl, SiteProvisioningSiteRequest sr)
+        private static SiteProvisioningSiteRequest CreateSiteCollection(ClientContext ctx, string hostWebUrl, SiteProvisioningSiteRequest sr)
         {
             //get the base tenant admin urls
             var tenantStr = hostWebUrl.ToLower().Replace("-my", "").Substring(8);
@@ -359,6 +358,7 @@ namespace minttulip.spo.remoteprovisioning
 
                 //create site collection using the Tenant object
                 var webUrl = String.Format("https://{0}.sharepoint.com/{1}/{2}", tenantStr, "sites", sr.Url);
+                sr.Url = webUrl;
                 var tenantAdminUri = new Uri(String.Format("https://{0}-admin.sharepoint.com", tenantStr));
                 string realm = TokenHelper.GetRealmFromTargetUrl(tenantAdminUri);
                 string token = TokenHelper.GetAppOnlyAccessToken(TokenHelper.SharePointPrincipal, tenantAdminUri.Authority, realm).AccessToken;
@@ -381,7 +381,7 @@ namespace minttulip.spo.remoteprovisioning
                     sr.SiteQuota = srt.SiteStorageQuota;
                     var properties = new SiteCreationProperties()
                     {
-                        Url = webUrl,
+                        Url = sr.Url,
                         Owner = primaryAdminEmail,
                         Title = sr.Title,
                         Template = srt.TypeSharePointSiteId,
@@ -412,11 +412,12 @@ namespace minttulip.spo.remoteprovisioning
                 SetSiteRegionAndLocale(webUrl, realm, ref token, srt);
                 SetSitePolicy(webUrl, srt.DefaultSitePolicyName);
                 //return site url
-                return webUrl;
+                return sr;
             }
             else
             {
-                return "###ERROR###";
+                sr.Url = "###ERROR###";
+                return sr;
             }
         }        
 
