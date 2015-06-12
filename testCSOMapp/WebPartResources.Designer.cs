@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace testCSOMapp {
+namespace minttulip.spo.remoteprovisioning {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace testCSOMapp {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("testCSOMapp.WebPartResources", typeof(WebPartResources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("minttulip.spo.remoteprovisioning.WebPartResources", typeof(WebPartResources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

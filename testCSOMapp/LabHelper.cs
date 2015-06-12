@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace testCSOMapp
+namespace minttulip.spo.remoteprovisioning
 {
     public class LabHelper
     {

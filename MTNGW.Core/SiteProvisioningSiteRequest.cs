@@ -14,6 +14,7 @@ namespace MTNGW.Core
         public string Description { get; set; }
         public string Url { get; set; }
         public string HostUrl { get; set; }
+        public FieldUserValue[] SiteAdmins { get; set; }
         public FieldUserValue[] SiteOwners { get; set; }
         public FieldUserValue[] SiteMembers { get; set; }
         public FieldUserValue[] SiteVisitors { get; set; }

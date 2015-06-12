@@ -7,7 +7,7 @@ using System.Security.Principal;
 using System.Web;
 using System.Web.Configuration;
 
-namespace testCSOMapp
+namespace minttulip.spo.remoteprovisioning
 {
     /// <summary>
     /// Encapsulates all the information from SharePoint.
